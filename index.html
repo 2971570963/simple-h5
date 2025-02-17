@@ -3,10 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>简单H5页面</title>
+  <title>简单H5页面 - Backendless 集成</title>
+
+  <!-- 引入 Backendless SDK -->
+  <script src="https://cdn.backendless.com/js/backendless.min.js"></script>
 </head>
 <body>
   <h1>欢迎来到我的H5页面</h1>
   <p>这是一个简单的HTML5页面示例，快分享给你的好朋友们吧！</p>
+
+  <!-- 用户数据提交表单 -->
+  <h2>提交你的留言</h2>
+  <form id="feedbackForm">
+    <label for="name">姓名:</label>
+    <input type="text" id="name" placeholder="请输入你的名字" required><br><br>
+    
+    <label for="message">留言:</label><br>
+    <textarea id="message" placeholder="请输入留言内容" required></textarea><br><br>
+    
+    <button type="submit">提交留言</button>
+  </form>
+
+  <p id="responseMessage"></p>
+
+  <script>
+    // 初始化 Backendless
+    Backendless.initApp("0A22E321-C5EA-4AE5-BF65-63260A34CC4C", "26D48466-F870-421E-B1F6-B23A2CF2ACE9");
+
+    // 表单提交处理
+    document.getElementById("feedbackForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      // 获取表单数据
+      const name = document.getElementById("name").value;
+      const message = document.getElementById("message").value;
+
+      // 将数据存储到 Backendless 数据库
+      const feedback = {
+        name: name,
+        message: message
+      };
+
+      // 使用 Backendless 数据库服务存储数据
+      Backendless.Data.of("Feedback").save(feedback)
+        .then(function(savedData) {
+          // 成功时显示反馈
+          document.getElementById("responseMessage").textContent = "感谢你的留言！";
+        })
+        .catch(function(error) {
+          // 错误时显示错误信息
+          document.getElementById("responseMessage").textContent = "留言失败: " + error.message;
+        });
+    });
+  </script>
 </body>
 </html>
