@@ -1,63 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>简单H5页面 - Backendless 集成</title>
-
-  <!-- 引入 Backendless SDK -->
-  <script src="https://cdn.backendless.com/js/backendless.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>记事本</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    #note-container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 16px;
+      resize: none;
+    }
+    button {
+      margin-top: 10px;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-  <h1>欢迎来到我的H5页面</h1>
-  <p>这是一个简单的HTML5页面示例，快分享给你的好朋友们吧！</p>
 
-  <!-- 用户数据提交表单 -->
-  <h2>提交你的留言</h2>
-  <form id="feedbackForm">
-    <label for="name">姓名:</label>
-    <input type="text" id="name" placeholder="请输入你的名字" required><br><br>
-    
-    <label for="message">留言:</label><br>
-    <textarea id="message" placeholder="请输入留言内容" required></textarea><br><br>
-    
-    <button type="submit">提交留言</button>
-  </form>
+  <div id="note-container">
+    <h2>记事本</h2>
+    <textarea id="noteText" placeholder="请输入您的笔记..."></textarea>
+    <button onclick="saveNote()">保存笔记</button>
+  </div>
 
-  <p id="responseMessage"></p>
+  <!-- 使用 type="module" 引入模块化的 Firebase SDK -->
+  <script type="module">
+    // 导入 Firebase 所需的模块
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-  <script>
-    // 确保 Backendless 加载完成后再初始化
-    window.onload = function() {
-      // 初始化 Backendless
-      Backendless.initApp("0A22E321-C5EA-4AE5-BF65-63260A34CC4C", "26D48466-F870-421E-B1F6-B23A2CF2ACE9");
-
-      // 表单提交处理
-      document.getElementById("feedbackForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        // 获取表单数据
-        const name = document.getElementById("name").value;
-        const message = document.getElementById("message").value;
-
-        // 将数据存储到 Backendless 数据库
-        const feedback = {
-          name: name,
-          message: message
-        };
-
-        // 使用 Backendless 数据库服务存储数据
-        Backendless.Data.of("Feedback").save(feedback)
-          .then(function(savedData) {
-            // 成功时显示反馈
-            document.getElementById("responseMessage").textContent = "感谢你的留言！";
-          })
-          .catch(function(error) {
-            // 错误时显示错误信息
-            document.getElementById("responseMessage").textContent = "留言失败: " + error.message;
-          });
-      });
+    // 您的 Firebase 配置（已替换为您提供的配置）
+    const firebaseConfig = {
+      apiKey: "AIzaSyDvtx0eLf5b_tLbaj3QxOFOolJZSSfPWo4",
+      authDomain: "rare-2145f.firebaseapp.com",
+      projectId: "rare-2145f",
+      storageBucket: "rare-2145f.firebasestorage.app",
+      messagingSenderId: "570217902178",
+      appId: "1:570217902178:web:6a0af616d0fe13d193e13b"
     };
+
+    // 初始化 Firebase 应用
+    const app = initializeApp(firebaseConfig);
+    // 获取 Realtime Database 实例
+    const database = getDatabase(app);
+
+    // 保存笔记函数
+    function saveNote() {
+      const noteText = document.getElementById("noteText").value;
+      if (noteText.trim() !== "") {
+        // 指定数据库中的 notes 节点
+        const notesRef = ref(database, "notes");
+        // 创建一个新的子节点
+        const newNoteRef = push(notesRef);
+        // 保存数据
+        set(newNoteRef, {
+          text: noteText,
+          timestamp: Date.now()
+        })
+        .then(() => {
+          alert("笔记已保存！");
+          // 保存成功后可清空输入框
+          document.getElementById("noteText").value = "";
+        })
+        .catch((error) => {
+          console.error("保存失败:", error);
+          alert("保存失败，请重试！");
+        });
+      } else {
+        alert("笔记内容不能为空！");
+      }
+    }
+
+    // 将 saveNote 函数暴露到全局，方便 HTML 中调用
+    window.saveNote = saveNote;
   </script>
 </body>
 </html>
